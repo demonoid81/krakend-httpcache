@@ -71,6 +71,35 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 		return nextF
 	}
 
+	redisURL, exists := os.LookupEnv("REDIS_URL")
+	if exists {
+		panic("Redis url is not set")
+	}
+	redisPassw := os.Getenv("REDIS_PASSWORD")
+
+	redisDB := 0
+	if dbs, exists := os.LookupEnv("REDIS_DB"); exists {
+		db, err := strconv.Atoi(dbs)
+		if err != nil {
+			panic(err)
+		}
+		redisDB = db
+	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     redisURL,
+		Password: redisPassw, // no password set
+		DB:       redisDB,    // use default DB
+	})
+
+	ttls := os.Getenv("DEFAULT_TTL")
+	ttli, err := strconv.Atoi(ttls)
+	if err != nil {
+		panic(err)
+	}
+	ttl = time.Duration(ttli) * time.Second
+
+	fmt.Println("initializing")
+
 	if b, err := json.Marshal(raw); err == nil {
 		var opts options
 		if err := json.Unmarshal(b, &opts); err == nil && opts.TTL > 0 {
@@ -78,7 +107,7 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 		}
 	}
 
-	cache := httpcache.NewMemoryCache(redisClient, ttl)
+	cache := httpcache.NewMemoryCache(rdb, ttl)
 
 	return func(ctx context.Context) *http.Client {
 		httpClient := nextF(ctx)
