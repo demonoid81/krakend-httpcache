@@ -31,7 +31,7 @@ var redisClient *redis.Client
 var ttl time.Duration
 
 func init() {
-	redisURL, exists := os.LookupEnv("REDIS_CACHE")
+	redisURL, exists := os.LookupEnv("REDIS_URL")
 	if exists {
 		panic("Redis url is not set")
 	}
