@@ -3,6 +3,7 @@ package httpcache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/demonoid81/krakend-httpcache/httpcache"
 	"github.com/redis/go-redis/v9"
 	"net/http"
@@ -59,6 +60,8 @@ func init() {
 		panic(err)
 	}
 	ttl = time.Duration(ttli) * time.Second
+
+	fmt.Println("initializing")
 }
 
 // NewHTTPClient creates a HTTPClientFactory using an in-memory-cached http client
