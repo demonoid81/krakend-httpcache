@@ -58,7 +58,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	ttl = time.Duration(ttli)
+	ttl = time.Duration(ttli) * time.Second
 }
 
 // NewHTTPClient creates a HTTPClientFactory using an in-memory-cached http client
@@ -71,7 +71,7 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 	if b, err := json.Marshal(raw); err == nil {
 		var opts options
 		if err := json.Unmarshal(b, &opts); err == nil && opts.TTL > 0 {
-			ttl = opts.TTL
+			ttl = opts.TTL * time.Second
 		}
 	}
 
