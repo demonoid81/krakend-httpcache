@@ -165,6 +165,13 @@ func (t *Transport) RoundTrip(req *http.Request) (resp *http.Response, err error
 			cachedResp.Header.Set(XFromCache, "1")
 		}
 
+		if varyMatches(cachedResp, req) {
+			// Can only use cached value if the new request doesn't Vary significantly
+
+			return cachedResp, nil
+
+		}
+
 		resp, err = transport.RoundTrip(req)
 		if err == nil && req.Method == "GET" && resp.StatusCode == http.StatusNotModified {
 			// Replace the 304 response with the one from cache, but update with some new headers
