@@ -31,15 +31,9 @@ const Namespace = "github.com/demonoid81/krakend-httpcache"
 var redisClient *redis.Client
 var ttl time.Duration
 
-// NewHTTPClient creates a HTTPClientFactory using an in-memory-cached http client
-func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.HTTPClientFactory {
-	raw, ok := cfg.ExtraConfig[Namespace]
-	if !ok {
-		return nextF
-	}
-
+func init() {
 	redisURL, exists := os.LookupEnv("REDIS_URL")
-	if exists {
+	if !exists {
 		panic("Redis url is not set")
 	}
 	redisPassw := os.Getenv("REDIS_PASSWORD")
@@ -58,6 +52,8 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 		DB:       redisDB,    // use default DB
 	})
 
+	redisClient = rdb
+
 	ttls := os.Getenv("DEFAULT_TTL")
 	ttli, err := strconv.Atoi(ttls)
 	if err != nil {
@@ -66,6 +62,14 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 	ttl = time.Duration(ttli) * time.Second
 
 	fmt.Println("initializing")
+}
+
+// NewHTTPClient creates a HTTPClientFactory using an in-memory-cached http client
+func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.HTTPClientFactory {
+	raw, ok := cfg.ExtraConfig[Namespace]
+	if !ok {
+		return nextF
+	}
 
 	if b, err := json.Marshal(raw); err == nil {
 		var opts options
