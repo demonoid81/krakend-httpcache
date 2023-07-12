@@ -78,7 +78,7 @@ func NewHTTPClient(cfg *config.Backend, nextF client.HTTPClientFactory) client.H
 		}
 	}
 
-	cache := httpcache.NewMemoryCache(rdb, ttl)
+	cache := httpcache.NewMemoryCache(redisClient, ttl)
 
 	return func(ctx context.Context) *http.Client {
 		httpClient := nextF(ctx)
